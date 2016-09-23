@@ -1,0 +1,25 @@
+\usepackage{tikz}
+\usetikzlibrary{calc}
+
+% http://tex.stackexchange.com/a/152492
+\tikzset{
+  fractal line/.style args={#1 and #2}{%
+    % #1 is ratio of length to move the middle of each segment
+    % #2 is the minimum length to apply the recurrence
+    to path={
+      let
+      \p1=(\tikztostart), % start point
+      \p2=(\tikztotarget), % end point
+      \n1={veclen(\x1-\x2,\y1-\y2)}, % distance
+      \p3=($(\p1)!.5!(\p2)$), % middle point
+      \p4=(rand*#1*\n1,rand*#1*\n1), % random vector
+      \p5=(\x3+\x4,\y3+\y4) % random moved middle point
+      in \pgfextra{
+        \pgfmathtruncatemacro\mytest{(\n1<#2)?1:0}
+        \ifnum\mytest=1 %
+        \tikzset{fractal line/.style args={#1 and #2}{line to}}
+        \fi
+      } to[fractal line=#1 and #2] (\p5) to[fractal line=#1 and #2] (\p2)
+    },
+  },
+}

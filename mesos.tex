@@ -2,8 +2,487 @@
 \title{Mesos}
 \author{Michael Whittaker}
 
+\usepackage{external}
+\usepackage{hyperref}
+\usepackage{slides}
+
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathmorphing}
+\usetikzlibrary{patterns}
+\usetikzlibrary{shapes}
+
+
 \begin{document}
 \begin{frame}
-  \titlepage
+  \includegraphics[width=\textwidth]{mesos-logo.png}
+
+  \begin{center}
+    Michael Whittaker
+  \end{center}
 \end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Overview
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\tikzstyle{server}=[inner sep=0, outer sep=0]
+\tikzstyle{slot}=[draw, opacity=0.8, minimum width=0.9cm, minimum height=0.4cm]
+
+\newcommand{\red}{red!50}
+\newcommand{\orange}{orange!50}
+\newcommand{\green}{green!50}
+\newcommand{\blue}{blue!50}
+\newcommand{\purple}{purple!50}
+\newcommand{\black}{black!50}
+
+\newcommand{\boundingbox}{
+  % \draw[help lines] (0, 0) grid (8.5, 7);
+  \path (0, -1) grid (8.5, 7);
+}
+
+% \drawserver
+%   1: {id}
+%   2: {x-coordinate}
+%   3: {y-coordinate}
+\newcommand{\drawserver}[3]{
+  \node[server] (s#1) at (#2, #3) {\includegraphics[width=1cm]{server.png}};
+}
+
+% \drawslots
+%   1: {id}
+%   2: {x-coordinate}
+%   3: {y-coordinate}
+%   4: {slot 0 color}
+%   5: {slot 1 color}
+%   6: {slot 2 color}
+\newcommand{\drawslots}[6]{
+  \drawserver{#1}{#2}{#3};
+  \node[slot, fill=#4] (s#1.0) at (#2, #3+0.5) {};
+  \node[slot, fill=#5] (s#1.1) at (#2, #3    ) {};
+  \node[slot, fill=#6] (s#1.2) at (#2, #3-0.5) {};
+}
+
+% \oneslot{x}{y}{color}
+\newcommand{\oneslot}[3]{
+  \draw[fill=#3] (#1, #2) rectangle (#1 + 0.4, #2 + 0.9);
+}
+
+% \twoslots{x}{y}{color 1}{color 2}
+\newcommand{\twoslots}[4]{
+  \oneslot{#1}{#2}{#3}
+  \oneslot{#1 + 0.5}{#2}{#4}
+}
+
+% \threeslots{x}{y}{color 1}{color 2}{color 3}
+\newcommand{\threeslots}[5]{
+  \oneslot{#1}{#2}{#3}
+  \oneslot{#1 + 0.5}{#2}{#4}
+  \oneslot{#1 + 1.0}{#2}{#5}
+}
+
+% \fourslots{x}{y}{color 1}{color 2}{color 3}{color 4}
+\newcommand{\fourslots}[6]{
+  \oneslot{#1}{#2}{#3}
+  \oneslot{#1 + 0.5}{#2}{#4}
+  \oneslot{#1 + 1.0}{#2}{#5}
+  \oneslot{#1 + 1.5}{#2}{#6}
+}
+
+\newcommand{\hadoopone}{
+  \node[
+    draw,
+    minimum width=5cm, minimum height=3cm,
+    label={[shift={(0, -1cm)}]north:Hadoop}
+  ] (hadoop) at (5, 4.5) {};
+  \foreach \i in {0, ..., 5} {
+    \draw (hadoop) -- (s\i);
+  }
+}
+
+\newcommand{\hadooptwo}{
+  \node[
+    draw,
+    minimum width=5cm, minimum height=3cm,
+    label={[shift={(0, -1cm)}]north:Hadoop}
+  ] (hadoop) at (2, 4.5) {};
+}
+
+\newcommand{\stormtwo}{
+  \node[
+    draw,
+    minimum width=5cm, minimum height=3cm,
+    label={[shift={(0, -1cm)}]north:Storm}
+  ] (storm) at (8, 4.5) {};
+}
+
+\newcommand{\hadooptwofull}{
+  \hadooptwo{}
+  \foreach \i in {0, ..., 2} {
+    \draw (hadoop) -- (s\i);
+  }
+}
+
+\newcommand{\stormtwofull}{
+  \stormtwo{}
+  \foreach \i in {3, ..., 5} {
+    \draw (storm) -- (s\i);
+  }
+}
+
+\newcommand{\tear}{
+  \draw[decoration = {zigzag,segment length = 4mm, amplitude = 1mm}, decorate]
+    (5, 6.5) -- (5, -1);
+}
+
+\begin{frame}
+  \makebox[\textwidth][c]{
+    \centering
+    \begin{tikzpicture}
+      \boundingbox{}
+
+      \drawserver{0}{0 }{0}
+      \drawserver{1}{2 }{0}
+      \drawserver{2}{4 }{0}
+      \drawserver{3}{6 }{0}
+      \drawserver{4}{8 }{0}
+      \drawserver{5}{10}{0}
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}
+  \makebox[\textwidth][c]{
+    \centering
+    \begin{tikzpicture}
+      \boundingbox{}
+
+      \drawslots{0}{0 }{0}{white}{white}{white}
+      \drawslots{1}{2 }{0}{white}{white}{white}
+      \drawslots{2}{4 }{0}{white}{white}{white}
+      \drawslots{3}{6 }{0}{white}{white}{white}
+      \drawslots{4}{8 }{0}{white}{white}{white}
+      \drawslots{5}{10}{0}{white}{white}{white}
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}
+  \makebox[\textwidth][c]{
+    \centering
+    \begin{tikzpicture}
+      \boundingbox{}
+
+      \hadoopone{}
+
+      \drawslots{0}{0 }{0}{white}{white}{white}
+      \drawslots{1}{2 }{0}{white}{white}{white}
+      \drawslots{2}{4 }{0}{white}{white}{white}
+      \drawslots{3}{6 }{0}{white}{white}{white}
+      \drawslots{4}{8 }{0}{white}{white}{white}
+      \drawslots{5}{10}{0}{white}{white}{white}
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}
+  \makebox[\textwidth][c]{
+    \centering
+    \begin{tikzpicture}
+      \boundingbox{}
+
+      \hadoopone{}
+      \fourslots{3}{3.5}{\red}{\red}{\blue}{\blue}
+      \fourslots{5}{3.5}{\green}{\green}{\orange}{\orange}
+
+      \drawslots{0}{0 }{0}{white}{white}{white}
+      \drawslots{1}{2 }{0}{white}{white}{white}
+      \drawslots{2}{4 }{0}{white}{white}{white}
+      \drawslots{3}{6 }{0}{white}{white}{white}
+      \drawslots{4}{8 }{0}{white}{white}{white}
+      \drawslots{5}{10}{0}{white}{white}{white}
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}
+  \makebox[\textwidth][c]{
+    \centering
+    \begin{tikzpicture}
+      \boundingbox{}
+
+      \hadoopone{}
+      \fourslots{3}{3.5}{\red}{\blue}{\blue}{\green}
+      \threeslots{5}{3.5}{\green}{\orange}{\orange}
+
+      \drawslots{0}{0 }{0}{\red}{white}{white}
+      \drawslots{1}{2 }{0}{white}{white}{white}
+      \drawslots{2}{4 }{0}{white}{white}{white}
+      \drawslots{3}{6 }{0}{white}{white}{white}
+      \drawslots{4}{8 }{0}{white}{white}{white}
+      \drawslots{5}{10}{0}{white}{white}{white}
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}
+  \makebox[\textwidth][c]{
+    \centering
+    \begin{tikzpicture}
+      \boundingbox{}
+
+      \hadoopone{}
+      \fourslots{3}{3.5}{\blue}{\blue}{\green}{\green}
+      \twoslots{5}{3.5}{\orange}{\orange}
+
+      \drawslots{0}{0 }{0}{\red}{white}{white}
+      \drawslots{1}{2 }{0}{\red}{white}{white}
+      \drawslots{2}{4 }{0}{white}{white}{white}
+      \drawslots{3}{6 }{0}{white}{white}{white}
+      \drawslots{4}{8 }{0}{white}{white}{white}
+      \drawslots{5}{10}{0}{white}{white}{white}
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}
+  \makebox[\textwidth][c]{
+    \centering
+    \begin{tikzpicture}
+      \boundingbox{}
+
+      \hadoopone{}
+      \oneslot{3}{3.5}{\orange}
+
+      \drawslots{0}{0 }{0}{\red }{\blue}{white}
+      \drawslots{1}{2 }{0}{\red }{\blue}{white}
+      \drawslots{2}{4 }{0}{\green}{white}{white}
+      \drawslots{3}{6 }{0}{\green}{white}{white}
+      \drawslots{4}{8 }{0}{\orange}{white}{white}
+      \drawslots{5}{10}{0}{white}{white}{white}
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}
+  \makebox[\textwidth][c]{
+    \centering
+    \begin{tikzpicture}
+      \boundingbox{}
+
+      \hadoopone{}
+      \fourslots{3}{3.5}{\orange}{\red}{\green}{\red}
+      \fourslots{5}{3.5}{\purple}{\purple}{\black}{\purple}
+
+      \drawslots{0}{0 }{0}{\red }{\blue}{white}
+      \drawslots{1}{2 }{0}{\red }{\blue}{white}
+      \drawslots{2}{4 }{0}{\green}{white}{white}
+      \drawslots{3}{6 }{0}{\green}{white}{white}
+      \drawslots{4}{8 }{0}{\orange}{white}{white}
+      \drawslots{5}{10}{0}{white}{white}{white}
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}
+  \makebox[\textwidth][c]{
+    \centering
+    \begin{tikzpicture}
+      \boundingbox{}
+
+      \hadoopone{}
+
+      \drawslots{0}{0 }{0}{\red }{\blue}{white}
+      \drawslots{1}{2 }{0}{\red }{\blue}{\purple}
+      \drawslots{2}{4 }{0}{\green}{\purple}{\black}
+      \drawslots{3}{6 }{0}{\green}{\purple}{white}
+      \drawslots{4}{8 }{0}{\orange}{\green}{white}
+      \drawslots{5}{10}{0}{\red}{\purple}{white}
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}
+  \makebox[\textwidth][c]{
+    \centering
+    \begin{tikzpicture}
+      \boundingbox{}
+
+      \hadooptwo{}
+      \stormtwo{}
+
+      \drawslots{0}{0 }{0}{white}{white}{white}
+      \drawslots{1}{2 }{0}{white}{white}{white}
+      \drawslots{2}{4 }{0}{white}{white}{white}
+      \drawslots{3}{6 }{0}{white}{white}{white}
+      \drawslots{4}{8 }{0}{white}{white}{white}
+      \drawslots{5}{10}{0}{white}{white}{white}
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}
+  \makebox[\textwidth][c]{
+    \centering
+    \begin{tikzpicture}
+      \boundingbox{}
+
+      \hadooptwofull{}
+      \stormtwofull{}
+      \tear{}
+
+      \drawslots{0}{0 }{0}{white}{white}{white}
+      \drawslots{1}{2 }{0}{white}{white}{white}
+      \drawslots{2}{4 }{0}{white}{white}{white}
+      \drawslots{3}{6 }{0}{white}{white}{white}
+      \drawslots{4}{8 }{0}{white}{white}{white}
+      \drawslots{5}{10}{0}{white}{white}{white}
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}
+  \makebox[\textwidth][c]{
+    \centering
+    \begin{tikzpicture}
+      \boundingbox{}
+
+      \hadooptwofull{}
+      \stormtwofull{}
+      \tear{}
+
+      \fourslots{0}{3.5}{\red}{\red}{\red}{\blue}
+      \fourslots{2}{3.5}{\orange}{\orange}{\black}{\black}
+
+      \threeslots{6}{3.5}{\purple}{\purple}{\green}
+
+      \drawslots{0}{0 }{0}{white}{white}{white}
+      \drawslots{1}{2 }{0}{white}{white}{white}
+      \drawslots{2}{4 }{0}{white}{white}{white}
+      \drawslots{3}{6 }{0}{white}{white}{white}
+      \drawslots{4}{8 }{0}{white}{white}{white}
+      \drawslots{5}{10}{0}{white}{white}{white}
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}
+  \makebox[\textwidth][c]{
+    \centering
+    \begin{tikzpicture}
+      \boundingbox{}
+
+      \hadooptwofull{}
+      \stormtwofull{}
+      \tear{}
+
+      \fourslots{0}{3.5}{\red}{\red}{\blue}{\orange}
+      \threeslots{2}{3.5}{\orange}{\black}{\black}
+
+      \twoslots{6}{3.5}{\purple}{\green}
+
+      \drawslots{0}{0 }{0}{\red}{white}{white}
+      \drawslots{1}{2 }{0}{white}{white}{white}
+      \drawslots{2}{4 }{0}{white}{white}{white}
+      \drawslots{3}{6 }{0}{\purple}{white}{white}
+      \drawslots{4}{8 }{0}{white}{white}{white}
+      \drawslots{5}{10}{0}{white}{white}{white}
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}
+  \makebox[\textwidth][c]{
+    \centering
+    \begin{tikzpicture}
+      \boundingbox{}
+
+      \hadooptwofull{}
+      \stormtwofull{}
+      \tear{}
+
+      \fourslots{0}{3.5}{\red}{\blue}{\orange}{\orange}
+      \twoslots{2}{3.5}{\black}{\black}
+
+      \oneslot{6}{3.5}{\green}
+
+      \drawslots{0}{0 }{0}{\red}{white}{white}
+      \drawslots{1}{2 }{0}{\red}{white}{white}
+      \drawslots{2}{4 }{0}{white}{white}{white}
+      \drawslots{3}{6 }{0}{\purple}{white}{white}
+      \drawslots{4}{8 }{0}{\purple}{white}{white}
+      \drawslots{5}{10}{0}{white}{white}{white}
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}
+  \makebox[\textwidth][c]{
+    \centering
+    \begin{tikzpicture}
+      \boundingbox{}
+
+      \hadooptwofull{}
+      \stormtwofull{}
+      \tear{}
+
+      \fourslots{0}{3.5}{\blue}{\orange}{\orange}{\black}
+      \oneslot{2}{3.5}{\black}
+
+      \drawslots{0}{0 }{0}{\red}{white}{white}
+      \drawslots{1}{2 }{0}{\red}{white}{white}
+      \drawslots{2}{4 }{0}{\red}{white}{white}
+      \drawslots{3}{6 }{0}{\purple}{white}{white}
+      \drawslots{4}{8 }{0}{\purple}{white}{white}
+      \drawslots{5}{10}{0}{\green}{white}{white}
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}
+  \makebox[\textwidth][c]{
+    \centering
+    \begin{tikzpicture}
+      \boundingbox{}
+
+      \hadooptwofull{}
+      \stormtwofull{}
+      \tear{}
+
+      \fourslots{0}{3.5}{\red}{\red}{\blue}{\orange}
+      \fourslots{2}{3.5}{\black}{\black}{\blue}{\blue}
+
+      \oneslot{6}{3.5}{\green}
+
+      \drawslots{0}{0 }{0}{\red}{\blue}{\black}
+      \drawslots{1}{2 }{0}{\red}{\orange}{white}
+      \drawslots{2}{4 }{0}{\red}{\black}{white}
+      \drawslots{3}{6 }{0}{\purple}{white}{white}
+      \drawslots{4}{8 }{0}{\purple}{white}{white}
+      \drawslots{5}{10}{0}{\green}{white}{white}
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}
+  \makebox[\textwidth][c]{
+    \centering
+    \begin{tikzpicture}
+      \boundingbox{}
+
+      \hadooptwofull{}
+      \stormtwofull{}
+      \tear{}
+
+      \fourslots{0}{3.5}{\blue}{\orange}{\black}{\black}
+      \twoslots{2}{3.5}{\blue}{\blue}
+
+      \drawslots{0}{0 }{0}{\red}{\blue}{\black}
+      \drawslots{1}{2 }{0}{\red}{\orange}{\red}
+      \drawslots{2}{4 }{0}{\red}{\black}{\red}
+      \drawslots{3}{6 }{0}{\purple}{\green}{white}
+      \drawslots{4}{8 }{0}{\purple}{white}{white}
+      \drawslots{5}{10}{0}{\green}{white}{white}
+    \end{tikzpicture}
+  }
+\end{frame}
+
 \end{document}
