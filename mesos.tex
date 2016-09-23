@@ -11,7 +11,6 @@
 \usetikzlibrary{patterns}
 \usetikzlibrary{shapes}
 
-
 \begin{document}
 \begin{frame}
   \includegraphics[width=\textwidth]{mesos-logo.png}
@@ -26,6 +25,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \tikzstyle{server}=[inner sep=0, outer sep=0]
 \tikzstyle{slot}=[draw, opacity=0.8, minimum width=0.9cm, minimum height=0.4cm]
+\tikzstyle{framework}=[draw, minimum width=2cm, minimum height=1cm]
+\tikzstyle{frameworktwo}=[draw, minimum width=2cm, minimum height=2.5cm]
 
 \newcommand{\red}{red!50}
 \newcommand{\orange}{orange!50}
@@ -483,6 +484,118 @@
       \drawslots{5}{10}{0}{\green}{white}{white}
     \end{tikzpicture}
   }
+\end{frame}
+
+\begin{frame}
+  \makebox[\textwidth][c]{
+    \centering
+    \begin{tikzpicture}
+      \boundingbox{}
+
+      \node[framework] (Hadoop)  at (0.5, 6) {Hadoop};
+      \node[framework] (Storm)   at (3.5, 6) {Storm};
+      \node[framework] (Spark)   at (6.5, 6) {Spark};
+
+      \node[
+        draw,
+        minimum width=5cm, minimum height=2.5cm,
+        label={[shift={(0, -1cm)}]north:Mesos}
+      ] (mesos) at (5, 3) {};
+      \foreach \i in {s0, s1, s2, s3, s4, s5, Hadoop, Storm, Spark} {
+        \draw (mesos) -- (\i);
+      }
+      \fourslots{3}{2}{\red}{\red}{\red}{\blue}
+      \fourslots{5}{2}{\blue}{\black}{\red}{\black}
+
+      \drawserver{0}{0 }{0}
+      \drawserver{1}{2 }{0}
+      \drawserver{2}{4 }{0}
+      \drawserver{3}{6 }{0}
+      \drawserver{4}{8 }{0}
+      \drawserver{5}{10}{0}
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}
+  \makebox[\textwidth][c]{
+    \centering
+    \begin{tikzpicture}
+      \boundingbox{}
+
+      \node[framework] (Hadoop)  at (0.5, 6) {Hadoop};
+      \node[framework] (Storm)   at (3.5, 6) {Storm};
+      \node[framework] (Spark)   at (6.5, 6) {Spark};
+      \node[dashed, framework] (unknown) at (9.5, 6) {???};
+
+      \node[
+        draw,
+        minimum width=5cm, minimum height=2.5cm,
+        label={[shift={(0, -1cm)}]north:Mesos}
+      ] (mesos) at (5, 3) {};
+      \foreach \i in {s0, s1, s2, s3, s4, s5, Hadoop, Storm, Spark} {
+        \draw (mesos) -- (\i);
+      }
+      \draw[dashed] (mesos) -- (unknown);
+      \fourslots{3}{2}{\red}{\red}{\red}{\blue}
+      \fourslots{5}{2}{\blue}{\black}{\red}{\black}
+
+      \drawserver{0}{0 }{0}
+      \drawserver{1}{2 }{0}
+      \drawserver{2}{4 }{0}
+      \drawserver{3}{6 }{0}
+      \drawserver{4}{8 }{0}
+      \drawserver{5}{10}{0}
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}
+  \makebox[\textwidth][c]{
+    \centering
+    \begin{tikzpicture}
+      \boundingbox{}
+
+      \node[frameworktwo, label={[shift={(0, -1cm)}]north:Hadoop}]
+        (Hadoop) at (0.5, 5.5) {};
+      \node[frameworktwo, label={[shift={(0, -1cm)}]north:Storm}]
+        (Storm) at (3.5, 5.5) {};
+      \node[frameworktwo, label={[shift={(0, -1cm)}]north:Spark}]
+        (Spark) at (6.5, 5.5) {};
+      \node[frameworktwo, dashed, label={[shift={(0, -1cm)}]north:???}]
+        (unknown) at (9.5, 5.5) {};
+
+      \threeslots{-0.25}{4.5}{\red}{\red}{\red}
+      \threeslots{ 2.75}{4.5}{\blue}{\blue}{\blue}
+      \threeslots{ 5.75}{4.5}{\orange}{\orange}{\orange}
+      \threeslots{ 8.75}{4.5}{\green}{\green}{\green}
+
+      \node[
+        draw,
+        minimum width=5cm, minimum height=1cm,
+      ] (mesos) at (5, 2.5) {Mesos};
+      \foreach \i in {s0, s1, s2, s3, s4, s5, Hadoop, Storm, Spark} {
+        \draw (mesos) -- (\i);
+      }
+      \draw[dashed] (mesos) -- (unknown);
+
+      \drawserver{0}{0 }{0}
+      \drawserver{1}{2 }{0}
+      \drawserver{2}{4 }{0}
+      \drawserver{3}{6 }{0}
+      \drawserver{4}{8 }{0}
+      \drawserver{5}{10}{0}
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\picframe{mesos-2.pdf}{width=\textwidth}{}
+\picframe{mesos-1.pdf}{width=\textwidth}{}
+
+\begin{frame}
+  \begin{center}
+    \Huge Demo
+  \end{center}
 \end{frame}
 
 \end{document}

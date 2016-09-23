@@ -1,25 +1,20 @@
-\usepackage{tikz}
-\usetikzlibrary{calc}
+% \picframe creates a frame that is 100% picture.
+%   #1: image filename
+%   #2: graphics options
+%   #3: source
+\newcommand{\picframe}[3]{
+  % http://tex.stackexchange.com/a/3927
+  { % all template changes are local to this group.
 
-% http://tex.stackexchange.com/a/152492
-\tikzset{
-  fractal line/.style args={#1 and #2}{%
-    % #1 is ratio of length to move the middle of each segment
-    % #2 is the minimum length to apply the recurrence
-    to path={
-      let
-      \p1=(\tikztostart), % start point
-      \p2=(\tikztotarget), % end point
-      \n1={veclen(\x1-\x2,\y1-\y2)}, % distance
-      \p3=($(\p1)!.5!(\p2)$), % middle point
-      \p4=(rand*#1*\n1,rand*#1*\n1), % random vector
-      \p5=(\x3+\x4,\y3+\y4) % random moved middle point
-      in \pgfextra{
-        \pgfmathtruncatemacro\mytest{(\n1<#2)?1:0}
-        \ifnum\mytest=1 %
-        \tikzset{fractal line/.style args={#1 and #2}{line to}}
-        \fi
-      } to[fractal line=#1 and #2] (\p5) to[fractal line=#1 and #2] (\p2)
-    },
-  },
+    \setbeamertemplate{navigation symbols}{}
+    \begin{frame}[plain]
+      \begin{tikzpicture}[remember picture,overlay]
+        \node[at=(current page.center)] {
+          \includegraphics[#2]{#1}
+        };
+      \end{tikzpicture}
+      \vskip0pt plus 1filll
+      \tiny #3
+    \end{frame}
+  }
 }
