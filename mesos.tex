@@ -1,4 +1,5 @@
-\documentclass{beamer}
+\documentclass[notes]{beamer}
+
 \title{Mesos}
 \author{Michael Whittaker}
 
@@ -13,13 +14,21 @@
 \usetikzlibrary{patterns}
 \usetikzlibrary{shapes}
 
+\newcommand{\smallnote}[1]{\note{\tiny #1}}
+
 \begin{document}
+
 \begin{frame}
   \includegraphics[width=\textwidth]{mesos-logo.png}
 
   \begin{center}
     Michael Whittaker
   \end{center}
+
+  \smallnote{
+    I'm Michael, and I'll be presenting Mesos: a distributed two-level cluster
+    scheduler.
+  }
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -137,6 +146,10 @@
 }
 
 \begin{frame}
+  \smallnote{
+    Let's imagine we're running a large company that offers word count as a
+    service. Business is booming, so we bought a large cluster of computers.
+  }
   \makebox[\textwidth][c]{
     \centering
     \begin{tikzpicture}
@@ -153,6 +166,11 @@
 \end{frame}
 
 \begin{frame}
+  \smallnote{
+    Each computer's resources is further divided into slots. For example, if
+    each machine had 3 cores and 3 GB of memory, then each slot could be 1 core
+    and 1 GB of memory.
+  }
   \makebox[\textwidth][c]{
     \centering
     \begin{tikzpicture}
@@ -169,6 +187,10 @@
 \end{frame}
 
 \begin{frame}
+  \smallnote{
+    As a word counting company, of course, we want to run Hadoop on this
+    cluster.
+  }
   \makebox[\textwidth][c]{
     \centering
     \begin{tikzpicture}
@@ -187,6 +209,11 @@
 \end{frame}
 
 \begin{frame}
+  \smallnote{
+    Users submit tasks to Hadoop which I'm representing here as these colored
+    rectangles. For example, these red tasks could be map tasks, these blue
+    tasks could be reduce tasks, and so on.
+  }
   \makebox[\textwidth][c]{
     \centering
     \begin{tikzpicture}
@@ -207,6 +234,11 @@
 \end{frame}
 
 \begin{frame}
+  \smallnote{
+    Hadoop has full control over the cluster and starts scheduling the tasks
+    into the machine's slots. Here, it scheduled the first task on the first
+    machine.
+  }
   \makebox[\textwidth][c]{
     \centering
     \begin{tikzpicture}
@@ -227,6 +259,9 @@
 \end{frame}
 
 \begin{frame}
+  \smallnote{
+    And here, it scheduled the second task on the second machine.
+  }
   \makebox[\textwidth][c]{
     \centering
     \begin{tikzpicture}
@@ -247,6 +282,9 @@
 \end{frame}
 
 \begin{frame}
+  \smallnote{
+    Hadoop keeps scheduling tasks...
+  }
   \makebox[\textwidth][c]{
     \centering
     \begin{tikzpicture}
@@ -266,6 +304,9 @@
 \end{frame}
 
 \begin{frame}
+  \smallnote{
+    when maybe more tasks arrive.
+  }
   \makebox[\textwidth][c]{
     \centering
     \begin{tikzpicture}
@@ -286,6 +327,10 @@
 \end{frame}
 
 \begin{frame}
+  \smallnote{
+    This is no problem. Hadoop schedules these tasks too. Life is good for our
+    word counting business.
+  }
   \makebox[\textwidth][c]{
     \centering
     \begin{tikzpicture}
@@ -304,6 +349,19 @@
 \end{frame}
 
 \begin{frame}
+  \smallnote{
+    Now imagine that as our business grows, we want to start doing more
+    complicated things. For example, maybe we want to monitor the amount of
+    traffic our service is getting and detect when traffic is abnormally high
+    or abnormally low. We can perform this anomaly detection using a stream
+    processing system like Apache Storm. You could also image that we may want
+    to run a production instance of Hadoop alongside a development version of
+    Hadoop. Or maybe, we want to run two versions of Hadoop at the same time.
+    Or maybe, the latest and greatest data processing framework was just
+    released and it is really good at handling a specific type of application.
+    Whatever the reasons, the question arises, how do we divide the cluster
+    between these two frameworks?
+  }
   \makebox[\textwidth][c]{
     \centering
     \begin{tikzpicture}
@@ -323,6 +381,11 @@
 \end{frame}
 
 \begin{frame}
+  \smallnote{
+    The most naive way is to simply divide the cluster completely in two.
+    Hadoop gets to manage the first three machines and Storm gets to manage the
+    last three machines.
+  }
   \makebox[\textwidth][c]{
     \centering
     \begin{tikzpicture}
@@ -343,6 +406,10 @@
 \end{frame}
 
 \begin{frame}
+  \smallnote{
+    Let's say we go with this model and tasks start flowing in. Hadoop gets a
+    lot of tasks to schedule and Storm only gets a handful.
+  }
   \makebox[\textwidth][c]{
     \centering
     \begin{tikzpicture}
@@ -368,6 +435,9 @@
 \end{frame}
 
 \begin{frame}
+  \smallnote{
+    The frameworks start scheduling jobs.
+  }
   \makebox[\textwidth][c]{
     \centering
     \begin{tikzpicture}
@@ -441,6 +511,10 @@
 \end{frame}
 
 \begin{frame}
+  \smallnote{
+    Then maybe a bunch more Hadoop tasks show up, and Storm is still pretty
+    lightly loaded.
+  }
   \makebox[\textwidth][c]{
     \centering
     \begin{tikzpicture}
@@ -466,6 +540,16 @@
 \end{frame}
 
 \begin{frame}
+  \smallnote{
+    Soon, Hadoop runs out of slots and tasks have to be queued up. Meanwhile,
+    the Storm side of the cluster has a lot of empty slots in which we could
+    run Hadoop tasks. Clearly, statically partitioning the cluster leads to
+    very poor cluster utilization. A lot of resources that could be used sit
+    idle.  Moreover, imagine these machines are all part of a global file
+    system like HDFS or GFS. It might be that a task running on this machine
+    needs data stored on this machine. By statically partitioning the cluster,
+    we limit the amount of locality our schedulers can take advantage of.
+  }
   \makebox[\textwidth][c]{
     \centering
     \begin{tikzpicture}
@@ -489,6 +573,27 @@
 \end{frame}
 
 \begin{frame}
+  \smallnote{
+    Clearly, statically partitioning the cluster is a bad idea. Ideally, we'd
+    like have a cluster manager which forms a narrow waist between data
+    processing frameworks and the underlying cluster.
+
+    We could architect the system to have a single monolithic cluster manager
+    that is responsible for scheduling all of the tasks for all of the
+    frameworks. Frameworks would communicate their resource requirements,
+    location preferences, scheduling preferences, and so on to the cluster
+    manager, and the cluster manager would be responsible for scheduling all of
+    the tasks. As you read, Borg has this kind of architecture and there are a
+    number of advantages. Primarily, the cluster manager has full knowledge of
+    the scheduling decisions and can achieve globally optimal scheduling.
+
+    This architecture also has a lot of disadvantages. The cluster manager
+    becomes a very complicated piece of software. Different frameworks may
+    desire different types of scheduling, so the cluster manager has to support
+    a rich set of scheduling policies. The interface between the frameworks and
+    the cluster manager has to be flexible enough to support all the existing
+    frameworks. And, ...
+  }
   \makebox[\textwidth][c]{
     \centering
     \begin{tikzpicture}
@@ -501,7 +606,7 @@
       \node[
         draw,
         minimum width=5cm, minimum height=2.5cm,
-        label={[shift={(0, -1cm)}]north:Mesos}
+        label={[shift={(0, -1cm)}]north:Monolithic Cluster Manager}
       ] (mesos) at (5, 3) {};
       \foreach \i in {s0, s1, s2, s3, s4, s5, Hadoop, Storm, Spark} {
         \draw (mesos) -- (\i);
@@ -520,6 +625,10 @@
 \end{frame}
 
 \begin{frame}
+  \smallnote{
+    ...it has to be flexible enough to support all the unknown frameworks that
+    haven't yet been developed.
+  }
   \makebox[\textwidth][c]{
     \centering
     \begin{tikzpicture}
@@ -533,7 +642,7 @@
       \node[
         draw,
         minimum width=5cm, minimum height=2.5cm,
-        label={[shift={(0, -1cm)}]north:Mesos}
+        label={[shift={(0, -1cm)}]north:Monolithic Cluster Manager}
       ] (mesos) at (5, 3) {};
       \foreach \i in {s0, s1, s2, s3, s4, s5, Hadoop, Storm, Spark} {
         \draw (mesos) -- (\i);
@@ -553,6 +662,17 @@
 \end{frame}
 
 \begin{frame}
+  \smallnote{
+    Mesos takes an alternative minimalistic approach and instead pushes
+    scheduling decisions into the frameworks. Instead of scheduling all the
+    tasks in the system, Mesos simply offers resources to frameworks according
+    to some allocation policy and lets the frameworks schedule jobs themselves.
+    We'll take a closer look at resource offers soon.
+
+    This two-level scheduling keeps Mesos very simple, very scalable, and
+    allows for new data processing frameworks to be developed independently of
+    Mesos.
+  }
   \makebox[\textwidth][c]{
     \centering
     \begin{tikzpicture}
@@ -591,22 +711,97 @@
   }
 \end{frame}
 
-\picframe{mesos-2.pdf}{width=\textwidth}{}
-\picframe{mesos-1.pdf}{width=\textwidth}{}
+\newcommand{\mesossource}{
+  \textcolor{gray}{
+    Source: \textit{
+      Mesos: A Platform for Fine-Grained Resource Sharing in the Data Center
+    }
+  }
+}
+
+\picframe{mesos-1.pdf}{width=\textwidth}{\mesossource}{
+  Now, let's take a closer look at Mesos' architecture with this diagram taken
+  from the paper. Mesos consists a of a central master. The master corresponds
+  to the Mesos box from the previous slide and is responsible for offering
+  resources to frameworks. For fault tolerance, the master has a number of hot
+  standbys which use ZooKeeper for leader election when the primary master
+  fails. Each machine in the cluster runs a Mesos slave which is responsible
+  for reporting available resources to the master and for starting and stopping
+  tasks.
+
+  Frameworks plug in to Mesos and have two parts. First, there is the scheduler
+  which accepts or rejects resources from the master and oversees the execution
+  of its jobs. Second is a framework executor which is launched on each machine
+  and executes the jobs.
+}
+
+\picframe{mesos-2.pdf}{width=\textwidth}{\mesossource}{
+  Resource offers are a key part of Mesos' architecture. Let's walk through the
+  example presented in the paper. First, a Mesos slave reports how many
+  resources it has available to the Mesos master. Here, slave 1 has 4 CPUs and
+  4 GB of RAM. The allocation module of the Mesos master determines how
+  resources should be offered. Here, it says to offer all available resources
+  to framework 1. Framework 1 responsds to the Mesos master and tells it to run
+  two tasks. The first uses 2 CPU and 1 GB of RAM. The second uses 1 CPU and 2
+  GB of RAM. The Mesos master forwards the tasks to the slave to be executed by
+  the framework's executor. Note that there is still 1 cpu and 1 GB of RAM left
+  of the machine. These resources could then be offered to framework 2.
+
+  In this example, the framework accepted the resources offered to it by the
+  master, but it doesn't have to. The framework can reject resources it doesn't
+  want and wait for resources it does want. For example, if Hadoop wants to run
+  a specific map task on a computer which hosts the task's data, it can wait
+  for an offer from that computer.
+}
+
+\newcommand{\question}[1]{\textcolor{gray}{\textit{Q: #1}}}
 
 \begin{frame}{Resource Allocation}
-  TODO
+  \begin{itemize}
+    \item
+      \question{How are resources offered to frameworks?}
+    \item \pause
+      A: Pluggable allocation module determines how resources are offered to
+      frameworks.
+
+    \item \pause
+      \question{When are resources offered to frameworks?}
+    \item \pause
+      A: Mesos assumes jobs are short and offers resources when tasks end.
+
+    \item \pause
+      \question{What if jobs aren't short?}
+    \item \pause
+      A: Mesos can kill jobs, giving the framework a grace period for cleaning
+      up.
+
+    \item \pause
+      \question{What if jobs don't want to die?}
+    \item \pause
+      A: Mesos provides each framework with a guarenteed allocation. So long as
+      framework uses less than it's guarenteed allocation, it's jobs won't be
+      killed.
+  \end{itemize}
 \end{frame}
 
-\begin{frame}{Isolation}
-  TODO
-\end{frame}
-
-\begin{frame}{Scalability and Robustness}
-  TODO
-\end{frame}
 
 \begin{frame}
+  \smallnote{
+    Now that we've discussed Mesos' architecture, let's do something fun and
+    switch over to a demo. Mesos is now an open source project as part of the
+    Apache Software Foundation, so you can actually download and run the code.
+
+    This terminal is SSHed into a virtual machine with 1 CPU and 4 GB of
+    memory. This top pane here is running the Mesos master, and this bottom
+    pane is running a Mesos slave. The Mesos master runs an HTTP server which
+    we can use to check on the state of the system. For example, we see no
+    active tasks, one agent (or slave), 1 CPU, 2.9 GB of memory, etc.
+
+    When I hit enter in this pane, it starts an example framework written in
+    Python and launches some tasks. You can see that the framework is offered
+    resources from the master. If I run it again and refresh at the right time,
+    you can also see active and completed tasks.
+  }
   \begin{center}
     \Huge Demo
   \end{center}
@@ -616,6 +811,16 @@
 % Behavior
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}{Mesos Behavior}
+  \smallnote{
+    Alright, back to the presentation. We've discussed Mesos' architecture and
+    seen it run in action. Now, let's discuss Mesos' behavior. I think it's
+    somewhat intuitive that Mesos performs best when run with elastic
+    frameworks and homogenous task durations. An elastic framework is one that
+    can immediately take advantage of an available resource. And homogenous
+    task durations just means that all tasks last roughly the same amount of
+    time. The paper backs up this intuition with some semi-formal analysis
+    which I'll now explain.
+  }
   \begin{center}
     \Huge
     Mesos performs best with \emph{elastic} frameworks and \emph{homogenous}
@@ -633,6 +838,34 @@
 }
 
 \begin{frame}{Rigid Framework}
+  \smallnote{
+    Consider a cluster with $n$ slots and a framework which wants $k$ of those
+    slots. For simplicity, I've assumed $n = k = 8$ in this example. Each row
+    here represents the lifetime of a single slot as tasks execute in it. For
+    example, this is the start of a task, this is the end of the task, this the
+    start of the next task, etc. I've assumed that task durations are
+    homogenous with duration $T$ and the start time of a task is uniformally
+    distributed.
+
+    Consider a rigid framework that needs to run for a total of $k \beta T$
+    time. That is, if it has all $k$ of its slots, it needs to run $\beta$
+    tasks in parallel. Here, $\beta = 2$. Assume some other blue framework is
+    just finishing up a job, and at the start of this figure, the red framework
+    starts getting assigned tasks. For example, here it is assigned this slot.
+    A little while later, it's given this slot, and so on. Since this framework
+    is rigid, it cannot begin execution until it has all $k$ of its slots which
+    happens right here. Once it has all of its slots, it runs for $\beta T$
+    time.
+
+    The ramp-up time of this system is the time it takes a framework to get a
+    hold of all of its slots. Since each task lasts exactly $T$ seconds, the
+    framework gets its slots in no more that $T$ seconds.
+
+    The completion time is the time it takes for the framework to completely
+    finish executing. The rigid framework spends roughly $T$ seconds sitting
+    idle waiting for all of its slots. Once it has them, it runs for about
+    $\beta T$ seconds. This is a total of $(1 + \beta) T$ seconds.
+  }
   \begin{itemize}
     \item Ramp-up time:  $T$
     \item Completion time: $(1 + \beta) T$
@@ -642,6 +875,16 @@
   \vspace{0.25cm}
 
   \makebox[\textwidth][c]{
+    \smallnote{
+      Finally, utiliziation is the fraction of time the framework spends
+      doing useful work. We see that the framework spends part of its time
+      sitting idle and part of its time doing work.
+
+      The area of this yellow idle time is $kT/2$ and the area of the green
+      working region is $k \beta T$. The fraction of the working time to the
+      sum of the total time comes out to $\beta / (\beta + 1.5)$. This is the
+      $\beta$ area, and this is the half area.
+    }
     \scalebox{0.85}{
     \centering
     \begin{tikzpicture}
@@ -701,7 +944,7 @@
       \pause
       \draw[ultra thick, rounded corners, opacity=0.75, fill=yellow!50]
         (0, 0) -- (0, 0.5) -- (3.5, 4) -- (3.5, 0) -- cycle;
-      \draw[ultra thick, rounded corners, opacity=0.75, fill=yellow!50]
+      \draw[ultra thick, rounded corners, opacity=0.75, fill=green!50]
         (3.5, 4) -- (12, 4) -- (12, 0) -- (3.5, 0) -- cycle;
       \node () at (8, 2) {\huge $k \beta T$};
       \node () at (2.5, 2) {\huge $\frac{kT}{2}$};
@@ -711,6 +954,19 @@
 \end{frame}
 
 \begin{frame}{Elastic Framework}
+  \smallnote{
+    Now, let's look at an elastic framework. As before, the ramp up time is
+    still $T$.
+
+    The completion time has reduced to $(1/2 + \beta) T$ If the framework were
+    to get all the slots immediately, it would finish at $\beta T$ seconds.
+    However, this blue region represents the wasted time that this framework
+    isn't running. The area is $kT/2$, so after $\beta T$ seconds, the
+    framework has to spend another $T/2$ seconds running.
+
+    The utilization is 1 because the framework starts working in a slot as soon
+    as it gets it. It never sits idle.
+  }
   \begin{itemize}
     \item Ramp-up time:  $T$
     \item Completion time: $(\frac{1}{2} + \beta) T$
@@ -769,44 +1025,111 @@
   }
 \end{frame}
 
-\begin{frame}{Placement Preferences}
-\end{frame}
-
-\begin{frame}{Heterogenous Tasks}
-\end{frame}
-
-\begin{frame}{Limitations}
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Implementation
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}{Implementation}
-  \begin{itemize}
-    \item ...
-    \item ...
-    \item ...
-  \end{itemize}
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Lessons
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}{Lessons}
-  \begin{itemize}
-    \item Narrow waist
-    \item End-to-end principle
-    \item Simplicity
-  \end{itemize}
-\end{frame}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Conclusion
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Implementation}
+  \smallnote{
+    Wrapping up, Mesos was originally only 10,000 lines of C++. It supported
+    Hadoop, Torque, and very young Spark. And the paper includes a lot of
+    impressive performance benchmarks which I'll leave you all to read in the
+    paper.
+  }
+  \begin{itemize}
+    \item 10,000 lines of C++
+    \item Supported Hadoop, Torque, and Spark
+    \item Lots of impressive performance benchmarks
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Lessons}
+  \smallnote{
+    Popping off the stack a bit, this paper presents the following lessons.
+    Clusters need schedulers to improve utilization. Higher cluster utilization
+    means you save money and developers are more efficient. Schedulers should
+    form a narrow waist between frameworks and the cluster itself. Ideally,
+    your scheduler is simple. Simplicity means its easy to implement, it's
+    flexible to multiple frameworks, its scalable, its easier to make fault
+    tolerant etc. And finally, Mesos is a good example of adhering to the
+    end-to-end argument. It pushes functionality as high as possible in a
+    layered system to great effect.
+  }
+  \begin{itemize}
+    \item Clusters need schedulers to improve utilization
+    \item Schedulers should form a narrow waist between frameworks and the
+      cluster
+    \item Be simple
+    \item Adhere to the end-to-end argument
+  \end{itemize}
+\end{frame}
+
 \begin{frame}
   \begin{center}
     \Huge Questions
   \end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Extras
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+  \begin{center}
+    \Huge Extras
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{tikzpicture}[remember picture,overlay]
+    \node[at=(current page.center)] {
+      \includegraphics[height=\paperheight]{containers.jpg}
+    };
+    \node[minimum width=100cm, minimum height=2cm, opacity=0.75, text
+          opacity=1, fill=white, at=(current page.center)]
+      {\Huge Isolation};
+  \end{tikzpicture}
+  \vskip0pt plus 1filll
+  \tiny \textcolor{white}{https://goo.gl/dqQ6lG}
+\end{frame}
+
+\begin{frame}{Scalability and Robustness}
+  \smallnote{
+    Mesos is a distributed system which means it has to be fast and it has to
+    tolerate misbehaving clients. To improve performance, frameworks can
+    install filters with the Mesos master. Each filter expresses a set of
+    resources that the master shouldn't even bother offering to the framework.
+    To incentivize frameworks to respond to resource offers quickly, the
+    offered resources count against the framework's isolation. And to handle
+    slow or crashy frameworks, Mesos can always rescind resource offers.
+  }
+  \begin{itemize}
+    \item Frameworks can install filters with the Mesos master.
+    \item Offered resources count against a framework's allocation.
+    \item If a frameworks is slow to respond, Mesos can rescind offers.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Fault Tolerance}
+  \smallnote{
+    To handle master crashes, each Mesos master maintains soft state that is
+    rederivable from slaves and frameworks. Each master also has a set of hot
+    standby replicas. When a master crashes, a new leader is elected and slaves
+    contact it to repopulate its soft state. To handle scheduler crashses,
+    Mesos allows multiple schedulers for the same framework to be registered.
+  }
+  \begin{itemize}
+    \item Mesos uses soft state derivable from slaves and frameworks.
+    \item Hot standby replicas.
+    \item Each framework can install multiple schedulers.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Placement Preferences}
+  Placement preferences can be achieved with delay and lottery scheduling.
+\end{frame}
+
+\begin{frame}{Heterogenous Tasks}
+  If the number of slots on each machine is big, the chances that a machine
+  will be filled completely with long lived tasks is small.
 \end{frame}
 
 \end{document}

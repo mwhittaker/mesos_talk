@@ -2,12 +2,14 @@
 %   #1: image filename
 %   #2: graphics options
 %   #3: source
-\newcommand{\picframe}[3]{
+%   #4: notes
+\newcommand{\picframe}[4]{
   % http://tex.stackexchange.com/a/3927
   { % all template changes are local to this group.
 
     \setbeamertemplate{navigation symbols}{}
     \begin{frame}[plain]
+      \smallnote{#4}
       \begin{tikzpicture}[remember picture,overlay]
         \node[at=(current page.center)] {
           \includegraphics[#2]{#1}
