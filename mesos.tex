@@ -1,4 +1,4 @@
-\documentclass[notes]{beamer}
+\documentclass[]{beamer}
 
 \title{Mesos}
 \author{Michael Whittaker}
@@ -767,12 +767,12 @@
     \item \pause
       \question{When are resources offered to frameworks?}
     \item \pause
-      A: Mesos assumes jobs are short and offers resources when tasks end.
+      A: Mesos assumes tasks are short and offers resources when tasks end.
 
     \item \pause
-      \question{What if jobs aren't short?}
+      \question{What if tasks aren't short?}
     \item \pause
-      A: Mesos can kill jobs, giving the framework a grace period for cleaning
+      A: Mesos can kill tasks, giving the framework a grace period for cleaning
       up.
 
     \item \pause
